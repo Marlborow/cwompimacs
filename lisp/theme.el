@@ -11,9 +11,6 @@
 ;;    (mindre-use-faded-lisp-parens t)
 ;;    :config
 ;;    (load-theme 'mindre t))
-(use-package all-the-icons
-  :ensure t
-  :if (display-graphic-p))
 
 (use-package kaolin-themes
   :config
