@@ -35,10 +35,18 @@
   (setq which-key-max-description-length 40))
 
 (use-package all-the-icons
-  :ensure t)
+  :ensure t
+  :if (display-graphic-p)
+  :config
+  (unless (find-font (font-spec :name "all-the-icons"))
+    (all-the-icons-install-fonts t)))
 
 (use-package nerd-icons
-  :ensure t)
+  :ensure t
+  :if (display-graphic-p)
+  :config
+  (unless (find-font (font-spec :name "Symbols Nerd Font Mono"))
+    (nerd-icons-install-fonts t)))
 
 (use-package general
   :after evil
