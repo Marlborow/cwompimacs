@@ -1,0 +1,127 @@
+(defun cw/xref-below ()
+  (interactive)
+  (split-window-below)
+  (other-window 1))
+
+(defun cw/xref-right ()
+  (interactive)
+  (split-window-right)
+  (other-window 1))
+
+(defun cw/dired-here ()
+  (interactive)
+  (dired (or (and buffer-file-name (file-name-directory buffer-file-name))
+             default-directory)))
+
+(use-package vterm
+  :commands vterm
+  :config
+  (setq vterm-kill-buffer-on-exit t))
+
+(use-package eat
+  :commands eat
+  :config
+  (setopt eat-kill-buffer-on-exit t))
+
+(defun cw/terminal-below ()
+  (interactive)
+  (split-window-below)
+  (other-window 1)
+  (cond
+   ((fboundp 'vterm) (vterm))
+   ((fboundp 'eat) (eat))
+   (t (ansi-term (or (getenv "SHELL") "/bin/bash")))))
+
+(with-eval-after-load 'evil
+  (setq evil-esc-delay 0)
+  (evil-ex-define-cmd "so" #'eval-buffer)
+  (evil-ex-define-cmd "source" #'eval-buffer)
+  (with-eval-after-load 'org
+    (evil-define-key '(normal visual) org-mode-map
+      (kbd "<tab>") #'evil-shift-right
+      (kbd "<backtab>") #'evil-shift-left
+      (kbd "C-<tab>") #'evil-shift-left)))
+
+(with-eval-after-load 'general
+  (general-evil-setup t)
+
+  (general-create-definer cw/leader
+    :states '(normal visual emacs)
+    :keymaps 'override
+    :prefix "SPC"
+    :global-prefix "C-SPC")
+
+  (general-define-key
+   :states '(normal visual)
+   "<tab>" #'evil-shift-right
+   "<backtab>" #'evil-shift-left
+   "C-<tab>" #'evil-shift-left
+   "C-," #'cw/xref-below
+   "C-." #'cw/xref-right
+   "C-<return>" #'cw/terminal-below
+   "C-RET" #'cw/terminal-below
+   "C-a" #'mark-whole-buffer
+   "S-<down>" #'evil-goto-line
+   "S-<up>" #'evil-goto-first-line
+   "C-h" #'evil-window-left
+   "C-j" #'evil-window-down
+   "C-k" #'evil-window-up
+   "C-l" #'evil-window-right
+   "C-<left>" #'evil-window-left
+   "C-<down>" #'evil-window-down
+   "C-<up>" #'evil-window-up
+   "C-<right>" #'evil-window-right)
+
+  (general-define-key
+   :states '(normal visual emacs insert)
+   "C-q" #'kill-current-buffer)
+
+  (general-define-key
+   :states '(normal)
+   "A" #'back-to-indentation
+   "D" #'evil-end-of-line)
+
+  (cw/leader
+   "d" '(:ignore t)
+   "d f" #'cw/dired-here))
+
+(with-eval-after-load 'dired
+  (require 'dired-aux)
+  (with-eval-after-load 'evil
+    (evil-define-key '(normal visual) dired-mode-map
+      (kbd "f") #'dired-create-empty-file
+      (kbd "d") #'dired-create-directory
+      (kbd "D") #'dired-do-delete
+      (kbd "RET") #'dired-find-file
+      (kbd "<return>") #'dired-find-file
+      (kbd "<escape>") #'quit-window
+      (kbd "ESC") #'quit-window)))
+
+(with-eval-after-load 'vterm
+  (add-hook 'vterm-mode-hook
+            (lambda ()
+              (let ((p (get-buffer-process (current-buffer))))
+                (when p (set-process-query-on-exit-flag p nil)))))
+  (with-eval-after-load 'evil
+    (evil-define-key '(normal visual insert emacs) vterm-mode-map
+      (kbd "C-q") #'kill-current-buffer)))
+
+(with-eval-after-load 'eat
+  (add-hook 'eat-mode-hook
+            (lambda ()
+              (let ((p (get-buffer-process (current-buffer))))
+                (when p (set-process-query-on-exit-flag p nil)))))
+  (with-eval-after-load 'evil
+    (evil-define-key '(normal visual insert emacs) eat-mode-map
+      (kbd "C-q") #'kill-current-buffer)))
+
+(with-eval-after-load 'term
+  (add-hook 'term-mode-hook
+            (lambda ()
+              (let ((p (get-buffer-process (current-buffer))))
+                (when p (set-process-query-on-exit-flag p nil)))))
+  (with-eval-after-load 'evil
+    (evil-define-key '(normal visual insert emacs) term-mode-map
+      (kbd "C-q") #'kill-current-buffer)))
+
+(provide 'keys)

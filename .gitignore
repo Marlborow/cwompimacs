@@ -1,0 +1,26 @@
+# ignore everything by default
+*
+
+# allow these
+!.gitignore
+!README.md
+!LICENSE
+
+!init.el
+!early-init.el
+
+!lisp/
+!lisp/**
+
+!themes/
+!themes/**
+
+!snippets/
+!snippets/**
+
+!modules/
+!modules/**
+
+!etc/
+!etc/**
+
