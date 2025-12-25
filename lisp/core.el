@@ -34,6 +34,12 @@
   (setq which-key-idle-delay 0.3)
   (setq which-key-max-description-length 40))
 
+(use-package all-the-icons
+  :ensure t)
+
+(use-package nerd-icons
+  :ensure t)
+
 (use-package general
   :after evil
   :demand t
