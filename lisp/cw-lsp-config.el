@@ -133,6 +133,20 @@
 
 (add-hook 'lsp-mode-hook #'cw/lsp-inline-suggestions)
 
+
+(use-package haskell-mode
+  :ensure t)
+
+(use-package lsp-haskell
+  :ensure t
+  :after (lsp-mode haskell-mode)
+  :hook ((haskell-mode . lsp-deferred)
+         (haskell-literate-mode . lsp-deferred))
+  :config
+  ;; optional but often the right thing if you installed HLS via ghcup:
+  (setq lsp-haskell-server-path "haskell-language-server-wrapper"))
+
+
 (use-package typescript-mode
   :ensure t
   :mode "\\.ts\\'"
@@ -188,4 +202,60 @@ AllowShortIfStatementsOnASingleLine: Never, AllowShortBlocksOnASingleLine: Never
 
 (add-hook 'before-save-hook #'cw/clang-format-on-save)
 
-(provide 'lsp)
+
+(define-derived-mode angelscript-mode c++-mode "AngelScript"
+  "Major mode for AngelScript.")
+
+(add-to-list 'auto-mode-alist '("\\.as\\'" . angelscript-mode))
+
+(with-eval-after-load 'cc-mode
+  ;; A fairly C#-ish brace/indent style for cc-mode derived modes.
+  (c-add-style
+   "angelscript-csharp"
+   '("java"                       ;; java style is closer to C# than gnu/bsd
+     (c-basic-offset . 4)
+     (indent-tabs-mode . nil)
+     ;; Newline before opening brace for class/func/etc (Allman-ish)
+     (c-hanging-braces-alist . ((class-open after)
+                               (class-close before)
+                               (defun-open after)
+                               (defun-close before)
+                               (block-open after)
+                               (block-close before)
+                               (substatement-open after)
+                               (statement-case-open after)))
+     ;; Where to add extra indentation
+     (c-offsets-alist . ((substatement-open . 0)
+                         (case-label . +)
+                         (statement-case-intro . +)
+                         (arglist-intro . +)
+                         (arglist-cont-nonempty . +)
+                         (arglist-close . 0)
+                         (brace-list-intro . +)
+                         (innamespace . 0)))))
+
+  (add-hook 'angelscript-mode-hook
+            (lambda ()
+              (c-set-style "angelscript-csharp")
+              (setq-local tab-width 4)
+              (setq-local indent-tabs-mode nil)
+              ;; optional: auto-newline on braces/semicolon like old IDEs
+              ;; (c-toggle-auto-newline 1)
+              )))
+
+;; ---- lsp-mode wiring (what you already have) ----
+(with-eval-after-load 'lsp-mode
+  (add-to-list 'lsp-language-id-configuration '(angelscript-mode . "angelscript"))
+  (lsp-register-custom-settings
+   '(("angel-lsp.trace.server" "off" t)
+     ("angelscript.trace.server" "off" t)
+     ("angelLsp.trace.server" "off" t)))
+  (lsp-register-client
+   (make-lsp-client
+    :new-connection (lsp-stdio-connection '("angel-lsp"))
+    :activation-fn (lsp-activate-on "angelscript")
+    :server-id 'angel-lsp
+    :major-modes '(angelscript-mode))))
+
+(add-hook 'angelscript-mode-hook #'lsp-deferred)
+(provide 'cw-lsp-config)

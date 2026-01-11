@@ -60,6 +60,7 @@
 (require 'cd)
 (require 'telescope)
 (require 'filetree)
-(require 'lsp)
+(require 'cw-lsp-config)
 (require 'cw-man)
+(require 'lambda-mode)
 (require 'landing)

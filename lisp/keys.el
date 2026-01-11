@@ -271,4 +271,67 @@
   (cw/tab-apply-leader-keys))
 
 
+;;Swap active buffer positions
+;; Swap current buffer with the window in a direction.
+;; Ignores: treemacs, terminal buffers (vterm/eat/term/ansi-term), minibuffer.
+
+(defun cw/swap--ignored-buffer-p (buf)
+  (with-current-buffer buf
+    (or (minibufferp buf)
+        (derived-mode-p 'treemacs-mode)
+        ;;(derived-mode-p 'vterm-mode)
+        ;;(derived-mode-p 'eat-mode)
+        ;;(derived-mode-p 'term-mode)
+		)))
+
+(defun cw/swap--ignored-window-p (win)
+  (or (not (window-live-p win))
+      (window-minibuffer-p win)
+      (cw/swap--ignored-buffer-p (window-buffer win))))
+
+(defun cw/window-swap (dir)
+  (interactive)
+  (let* ((w1 (selected-window))
+         (w2 (window-in-direction dir w1)))
+    (cond
+     ((not (window-live-p w2))
+      (message "No window %s." dir))
+     ((or (cw/swap--ignored-window-p w1)
+          (cw/swap--ignored-window-p w2))
+      (message "Swap ignored (treemacs/terminal/minibuffer)."))
+     (t
+		(let* ((b1 (window-buffer w1))
+				(b2 (window-buffer w2))
+				(s1 (window-start w1))
+				(s2 (window-start w2))
+				(p1 (window-point w1))
+				(p2 (window-point w2)))
+		(set-window-buffer w1 b2)
+		(set-window-buffer w2 b1)
+		(set-window-start w1 s2)
+		(set-window-start w2 s1)
+		(set-window-point w1 p2)
+		(set-window-point w2 p1)
+		;; focus the window we swapped into
+		(select-window w2))))))
+:
+(defun cw/window-swap-left ()  (interactive) (cw/window-swap 'left))
+(defun cw/window-swap-down ()  (interactive) (cw/window-swap 'down))
+(defun cw/window-swap-up ()    (interactive) (cw/window-swap 'up))
+(defun cw/window-swap-right () (interactive) (cw/window-swap 'right))
+
+(with-eval-after-load 'general
+  (when (fboundp 'cw/leader)
+    (cw/leader
+     "s" '(:ignore t)
+     "s h" #'cw/window-swap-left
+     "s j" #'cw/window-swap-down
+     "s k" #'cw/window-swap-up
+     "s l" #'cw/window-swap-right
+     "s <left>"  #'cw/window-swap-left
+     "s <down>"  #'cw/window-swap-down
+     "s <up>"    #'cw/window-swap-up
+     "s <right>" #'cw/window-swap-right)))
+
+
 (provide 'keys)

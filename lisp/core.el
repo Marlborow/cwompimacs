@@ -21,6 +21,81 @@
   :config
   (evil-commentary-mode 1))
 
+
+
+
+
+
+
+
+;;; yuck indentation ----------------------------------------------------------
+
+(defun cw/yuck-indent-line ()
+  "Indent current line by 4 spaces per paren depth (no alignment)."
+  (interactive)
+  (let* ((ppss (syntax-ppss (line-beginning-position)))
+         (in-string (nth 3 ppss))
+         (in-comment (nth 4 ppss)))
+    (unless (or in-string in-comment)
+      (let* ((depth (car ppss))
+             (bol (line-beginning-position))
+             (offset (- (current-column) (current-indentation)))
+             (indent 0))
+        (save-excursion
+          (goto-char bol)
+          ;; If line starts with a closing delimiter, dedent one level.
+          (when (looking-at-p "\\s-*[])}]")
+            (setq depth (max 0 (1- depth))))
+          (setq indent (* 4 depth))
+          (indent-line-to indent))
+        ;; Keep point in a sensible place if it was in the indent.
+        (when (> offset 0)
+          (move-to-column (+ indent offset) t))))))
+
+(defun cw/yuck-format-buffer ()
+  "Force yuck buffer to spaces + 4-space indent."
+  (when (derived-mode-p 'yuck-mode)
+    (setq-local indent-tabs-mode nil)
+    (setq-local tab-width 4)
+    (setq-local indent-line-function #'cw/yuck-indent-line)
+
+    ;; Clean + reindent whole buffer.
+    (untabify (point-min) (point-max))
+    (delete-trailing-whitespace)
+    (indent-region (point-min) (point-max))))
+
+(defun cw/yuck-setup ()
+  "Setup strict 4-space indentation for yuck."
+  (setq-local indent-tabs-mode nil)
+  (setq-local tab-width 4)
+  (setq-local indent-line-function #'cw/yuck-indent-line)
+
+  ;; Auto-fix on save.
+  (add-hook 'before-save-hook #'cw/yuck-format-buffer nil t))
+
+(use-package yuck-mode
+  :mode "\\.yuck\\'"
+  :hook (yuck-mode . cw/yuck-setup))
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 (use-package evil-collection
   :after evil
   :config
@@ -74,7 +149,7 @@
 (setq make-backup-files nil)
 (setq auto-save-default nil)
 (setq frame-resize-pixelwise t)
-
+(add-hook 'dired-mode-hook 'auto-revert-mode)
 (global-display-line-numbers-mode 1)
 (setq display-line-numbers-type t)
 
@@ -88,9 +163,9 @@
   (let* ((cw/fonts '( "Cascadia Code" "DejaVu Sans Mono" "Monospace"))
          (cw/font (seq-find (lambda (f) (find-font (font-spec :name f))) cw/fonts)))
     (when cw/font
-      (set-face-attribute 'default nil :font (format "%s-12" cw/font))
-      (set-face-attribute 'fixed-pitch nil :font (format "%s-12" cw/font))
-      (add-to-list 'default-frame-alist `(font . ,(format "%s-12" cw/font))))))
+      (set-face-attribute 'default nil :font (format "%s-11.5" cw/font))
+      (set-face-attribute 'fixed-pitch nil :font (format "%s-11.5" cw/font))
+      (add-to-list 'default-frame-alist `(font . ,(format "%s-11.5" cw/font))))))
 
 
 
@@ -110,21 +185,19 @@
   (let* ((proj (project-current nil))
          (root (when proj (project-root proj))))
     (when (and root (not (equal root cw/global-cwd)))
-      (setq cw/global-cwd root)
+      (setq cw/global-cwd (cw/dir-normalize root))
       (setq cw/global-cwd-project proj)
       (when (and (fboundp 'treemacs-get-local-window)
                  (treemacs-get-local-window)
                  (fboundp 'treemacs-add-and-display-current-project-exclusively))
         (let ((default-directory cw/global-cwd))
           (treemacs-add-and-display-current-project-exclusively))))))
-
 (add-hook
  'after-init-hook
  (lambda ()
-   (setq cw/global-cwd (file-name-as-directory (or (getenv "PWD") default-directory)))
+   (setq cw/global-cwd
+         (cw/dir-normalize (or (getenv "PWD") default-directory)))
    (setq cw/global-cwd-project (project-current nil))
    (add-hook 'find-file-hook #'cw/update-global-cwd)))
-
-
 
 (provide 'core)

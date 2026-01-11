@@ -1,7 +1,7 @@
-;;(use-package anti-zenburn-theme
-;;  :config
-;;  (mapc #'disable-theme custom-enabled-themes)
-;;  (load-theme 'anti-zenburn t))
+(use-package anti-zenburn-theme
+  :config
+  (mapc #'disable-theme custom-enabled-themes)
+  (load-theme 'anti-zenburn t))
 
 ;;(use-package mindre-theme
 ;;    :ensure t
@@ -12,10 +12,10 @@
 ;;    :config
 ;;    (load-theme 'mindre t))
 
-(use-package kaolin-themes
-  :config
-  (load-theme 'kaolin-dark t)
-  (kaolin-treemacs-theme))
+;;(use-package kaolin-themes
+;;  :config
+;;  (load-theme 'kaolin-dark t)
+;;  (kaolin-treemacs-theme))
 
 (require 'color)
 

@@ -13,13 +13,17 @@
   (completion-category-overrides '((file (styles basic partial-completion)))))
 
 
-
+(defun cw/dir-normalize (dir)
+  "Expand ~, make DIR end with /, and error if it isn't a directory."
+  (let ((d (file-name-as-directory (expand-file-name dir))))
+    (unless (file-directory-p d)
+      (user-error "Not a directory: %s" d))
+    d))
 
 
 (defun cw/consult-ripgrep-global ()
   (interactive)
-  (let ((dir (or cw/global-cwd default-directory)))
-    (consult-ripgrep dir)))
+  (consult-ripgrep (cw/dir-normalize (or cw/global-cwd default-directory))))
 
 
 
@@ -38,7 +42,8 @@
              (proj (let ((default-directory dir))
                      (project-current nil)))
              (root (if proj (project-root proj) dir)))
-        (setq cw/global-cwd (file-name-as-directory root))
+		(setq cw/global-cwd (cw/dir-normalize root))
+		;;(setq cw/global-cwd (file-name-as-directory root))
         (setq cw/global-cwd-project proj)
         (when (and (fboundp 'treemacs-get-local-window)
                    (treemacs-get-local-window)
