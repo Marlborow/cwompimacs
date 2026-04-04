@@ -149,6 +149,7 @@
 (setq make-backup-files nil)
 (setq auto-save-default nil)
 (setq frame-resize-pixelwise t)
+(global-hl-line-mode t)
 (add-hook 'dired-mode-hook 'auto-revert-mode)
 (global-display-line-numbers-mode 1)
 (setq display-line-numbers-type t)
@@ -160,12 +161,12 @@
 
 
 (when (display-graphic-p)
-  (let* ((cw/fonts '( "Cascadia Code" "DejaVu Sans Mono" "Monospace"))
+  (let* ((cw/fonts '( "FantasqueSansM Nerd Font" "DejaVu Sans Mono" "Monospace"))
          (cw/font (seq-find (lambda (f) (find-font (font-spec :name f))) cw/fonts)))
     (when cw/font
-      (set-face-attribute 'default nil :font (format "%s-11.5" cw/font))
-      (set-face-attribute 'fixed-pitch nil :font (format "%s-11.5" cw/font))
-      (add-to-list 'default-frame-alist `(font . ,(format "%s-11.5" cw/font))))))
+      (set-face-attribute 'default nil :font (format "%s-11" cw/font))
+      (set-face-attribute 'fixed-pitch nil :font (format "%s-11" cw/font))
+      (add-to-list 'default-frame-alist `(font . ,(format "%s-11" cw/font))))))
 
 
 

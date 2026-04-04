@@ -3,6 +3,10 @@
   (mapc #'disable-theme custom-enabled-themes)
   (load-theme 'anti-zenburn t))
 
+;;(set-frame-parameter (selected-frame) 'alpha-background 92)
+;;(add-to-list 'default-frame-alist '(alpha-background . 92))
+
+
 ;;(use-package mindre-theme
 ;;    :ensure t
 ;;    :straight (:host github :repo "erikbackman/mindre-theme")
@@ -12,10 +16,72 @@
 ;;    :config
 ;;    (load-theme 'mindre t))
 
-;;(use-package kaolin-themes
-;;  :config
-;;  (load-theme 'kaolin-dark t)
-;;  (kaolin-treemacs-theme))
+;(use-package kaolin-themes
+;  :config
+;	(load-theme 'kaolin-dark t)
+;	(kaolin-treemacs-theme))
+
+;(use-package colorsarenice-theme
+;  :ensure t
+;  :no-require t
+;  :config
+;  (load-theme 'colorsarenice-dark t))
+
+
+;(use-package ef-themes
+;  :ensure t
+;  :config
+;  (load-theme 'ef-dark t))
+
+;(use-package doom-themes
+;  :ensure t
+;  :config
+;  (load-theme 'doom-one t))
+
+;(load-theme 'modus-vivendi t)
+;;(load-theme 'modus-vivendi-tinted t)
+
+;(use-package gruvbox-theme
+;  :ensure t
+;  :config
+;  (load-theme 'gruvbox-dark-medium t))
+
+;(use-package bespoke-themes
+;  :ensure t
+;  :straight (:host github :repo "mclear-tools/bespoke-themes" :branch "main")
+;  :config
+;  ;; Set evil cursor colors
+;  (setq bespoke-set-evil-cursors t)
+;  ;; Set use of italics
+;  (setq bespoke-set-italic-comments t
+;        bespoke-set-italic-keywords t)
+;  ;; Set variable pitch
+;  (setq bespoke-set-variable-pitch t)
+;  ;; Set initial theme variant
+;  (setq bespoke-set-theme 'light)
+;  ;; Load theme
+;  (load-theme 'bespoke t))
+
+;(use-package avk-emacs-themes
+;  :ensure t
+;  :demand t
+;  :config
+;  ;; don't prompt every startup
+;  (setq custom-safe-themes t)
+;(load-theme 'avk-daylight t))
+
+
+
+;(use-package spacemacs-theme
+;  :ensure t
+;  :config
+;  (load-theme 'spacemacs-dark t))
+;; or: (load-theme 'spacemacs-light t)
+
+
+
+
+
 
 (require 'color)
 

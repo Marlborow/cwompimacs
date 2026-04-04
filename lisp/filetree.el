@@ -85,11 +85,24 @@
 
 (defun cw/treemacs-ret ()
   (interactive)
-  (let* ((btn (treemacs-node-at-point))
+  (let* ((btn  (treemacs-node-at-point))
          (path (and btn (treemacs-button-get btn :path))))
-    (if (and path (file-directory-p path))
-        (treemacs-toggle-node)
-      (treemacs-visit-node-in-most-recently-used-window))))
+    (cond
+     ;; Directory: expand/collapse in place.
+     ((and path (file-directory-p path))
+      (treemacs-toggle-node))
+     ;; File: open directly in the most recent non-treemacs window.
+     ((and path (file-regular-p path))
+      (select-window
+       (or (seq-find (lambda (w)
+                       (and (window-live-p w)
+                            (not (eq w (treemacs-get-local-window)))
+                            (not (window-minibuffer-p w))))
+                     (window-list))
+           (next-window)))
+      (find-file path))
+     ;; Fallback for virtual/extension nodes.
+     (t (treemacs-visit-node-in-most-recently-used-window)))))
 
 (with-eval-after-load 'general
   (if (fboundp 'cw/leader)
@@ -110,6 +123,7 @@
   (define-key treemacs-mode-map (kbd "C-<left>") #'cw/ctrl-left)
   (define-key treemacs-mode-map (kbd "C-h") #'cw/ctrl-left)
 
+  (setq treemacs-follow-gitignore t)
   (treemacs-resize-icons 16)
   (treemacs-follow-mode 1)
   (add-hook 'treemacs-mode-hook
@@ -118,7 +132,9 @@
       (setq-local display-line-numbers nil)))
 
   (with-eval-after-load 'evil
-    (evil-define-key '(normal visual emacs motion) treemacs-mode-map
+    ;; Use evil-define-key* (immediate, no defer) and bind motion state
+    ;; explicitly so treemacs-evil's motion-state RET doesn't intercept first.
+    (evil-define-key* '(normal visual emacs motion) treemacs-mode-map
       (kbd "q") #'treemacs-quit
       (kbd "C-q") #'treemacs-quit
       (kbd "Q") #'treemacs-kill-buffer
@@ -127,6 +143,12 @@
       (kbd "C-<right>") #'cw/filetree-escape-right
       (kbd "C-l") #'cw/filetree-escape-right
       (kbd "C-<left>") #'cw/ctrl-left
-      (kbd "C-h") #'cw/ctrl-left)))
+      (kbd "C-h") #'cw/ctrl-left)
+    ;; Also stomp on the motion state map directly since treemacs-evil
+    ;; may bind RET there after us.
+    (evil-define-key* 'motion treemacs-mode-map
+      (kbd "RET") #'cw/treemacs-ret
+      (kbd "<return>") #'cw/treemacs-ret)
+    (evil-normalize-keymaps)))
 
 (provide 'filetree)

@@ -80,12 +80,24 @@
 
 (defun cw/terminal-below ()
   (interactive)
-  (split-window-below)
-  (other-window 1)
-  (let ((default-directory (or cw/global-cwd default-directory)))
+  (let* ((dir (or (and (fboundp 'cw/tab-cwd) (cw/tab-cwd))
+                  cw/global-cwd
+                  default-directory))
+         ;; Name the buffer after the project dir so each tab gets its own.
+         (proj-name (file-name-nondirectory (directory-file-name dir)))
+         (buf-name  (format "*term: %s*" proj-name))
+         (default-directory dir))
+    (split-window-below)
+    (other-window 1)
     (cond
-     ((fboundp 'vterm) (vterm))
-     ((fboundp 'eat) (eat))
+     ((fboundp 'vterm)
+      (if (get-buffer buf-name)
+          (switch-to-buffer buf-name)
+        (vterm buf-name)))
+     ((fboundp 'eat)
+      (if (get-buffer buf-name)
+          (switch-to-buffer buf-name)
+        (eat buf-name)))
      (t (ansi-term (or (getenv "SHELL") "/bin/bash"))))))
 
 (defun cw/shift-right-dwim (count)
@@ -175,6 +187,7 @@
    "C-." #'cw/xref-right
    "C-<return>" #'cw/terminal-below
    "C-RET" #'cw/terminal-below
+   "C-/" #'tab-bar-new-tab
    "C-a" #'mark-whole-buffer
    "C-q" #'cw/kill-buffer-and-window
    "C-r" #'cw/toggle-resize-mode
@@ -188,13 +201,13 @@
    "C-<right>" #'cw/ctrl-right
    "S-<down>" #'evil-goto-line
    "S-<up>" #'evil-goto-first-line)
-  
+
   (general-define-key
    :states '(insert)
    "<tab>" #'cw/tab-complete-or-shift
    "<backtab>" #'cw/shift-left-dwim
    "C-<tab>" #'cw/shift-left-dwim)
-  
+
   (general-define-key
    :states '(normal)
    "A" #'back-to-indentation
